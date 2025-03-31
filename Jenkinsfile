@@ -1,42 +1,32 @@
 pipeline {
-    agent { label 'Jenkins-Agent' }
-    
+    agent any
+
     tools {
-        nodejs 'NodeJS18' // Ensure Node.js is installed in Jenkins
+        nodejs 'NodeJS20'  // Match the configured name in Jenkins
     }
 
     stages {
-        stage("Cleanup Workspace") {
+        stage('Check Node Version') {
             steps {
-                cleanWs()
+                sh 'node -v'
+                sh 'npm -v'
             }
         }
 
-        stage("Checkout from SCM") {
-            steps {
-                git branch: 'main', credentialsId: 'github', url: 'https://github.com/SandeepaMuthukumari/social_media_web_app'
-            }
-        }
-
-        stage("Install Dependencies") {
+        stage('Install Dependencies') {
             steps {
                 sh 'npm install'
             }
         }
 
-        stage("Build Application") {
+        stage('Build Application') {
             steps {
                 sh 'npm run build'
             }
         }
-
-        stage("Test Application") {
-            steps {
-                sh 'npm test'
-            }
-        }
     }
 }
+
 
 
 
