@@ -6,13 +6,12 @@ pipeline {
     }
 
     environment {
-	    APP_NAME = "social-media-web-app-pipeline"
-            RELEASE = "1.0.0"
-            DOCKER_USER = "sandeepadocker"
-            DOCKER_PASS = 'dockerhub'
-            IMAGE_NAME = "${DOCKER_USER}" + "/" + "${APP_NAME}"
-            IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
-	    
+        APP_NAME = "social-media-web-app-pipeline"
+        RELEASE = "1.0.0"
+        DOCKER_USER = "sandeepadocker"
+        DOCKER_PASS = credentials('dockerhub-token')  // Using Jenkins credentials store for secure token
+        IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
+        IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
     }
 
     stages {
@@ -35,23 +34,25 @@ pipeline {
             }
         }
 
-        stage("Build & Push Docker Image") {
+        stage('Build & Push Docker Image') {
             steps {
                 script {
-                    docker.withRegistry('',DOCKER_PASS) {
-                        docker_image = docker.build "${IMAGE_NAME}"
+                    // Login to Docker registry and build the image
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_PASS) {
+                        docker_image = docker.build("${IMAGE_NAME}")
                     }
 
-                    docker.withRegistry('',DOCKER_PASS) {
+                    // Push the image with the tag and 'latest'
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_PASS) {
                         docker_image.push("${IMAGE_TAG}")
                         docker_image.push('latest')
                     }
                 }
             }
-
-       }
+        }
     }
 }
+
 
 
 
