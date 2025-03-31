@@ -19,11 +19,10 @@ pipeline {
         }
 
         stage("Build Application"){
-            steps {
-                sh "mvn clean package"
-            }
-
-       }
+                steps {
+                    sh "mvn -f social_media_web_app/pom.xml clean package"
+                }
+        }
 
        stage("Test Application"){
            steps {
