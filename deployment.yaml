@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: social-media-web-app-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: social-media-web-app
+  template:
+    metadata:
+      labels:
+        app: social-media-web-app
+    spec:
+      containers:
+        - name: social-media-web-app
+          image: https://hub.docker.com/repository/docker/sandeepadocker/social-media-web-app-pipeline/tags/1.0.0-12/sha256-fda05501f13d107b194c21930d21ece976e0364327761a8837e83a457044caee
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 8080
