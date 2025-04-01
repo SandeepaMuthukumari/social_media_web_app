@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: social-media-web-app
-          image: https://hub.docker.com/repository/docker/sandeepadocker/social-media-web-app-pipeline/tags/1.0.0-12/sha256-fda05501f13d107b194c21930d21ece976e0364327761a8837e83a457044caee
+          image: sandeepadocker/social-media-web-app-pipeline:1.0.0-12
           resources:
             limits:
               memory: "256Mi"
