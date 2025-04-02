@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: social-web-media-app
-          image: https://hub.docker.com/repository/docker/sandeepadocker/social-media-web-app-pipeline  # e.g., public.ecr.aws/your-image
+          image: sandeepadocker/social-media-web-app-pipeline:1.0.0-12  # e.g., public.ecr.aws/your-image
           ports:
             - containerPort: 3000
