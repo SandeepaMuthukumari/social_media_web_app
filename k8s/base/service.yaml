@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: social-media-service
+  name: social-media-web-app-service
 spec:
   type: LoadBalancer
   selector:
