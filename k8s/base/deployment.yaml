@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: social-media-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: social-media-web-app
+  template:
+    metadata:
+      labels:
+        app: social-media-web-app
+    spec:
+      containers:
+        - name: social-web-media-app
+          image: https://hub.docker.com/repository/docker/sandeepadocker/social-media-web-app-pipeline  # e.g., public.ecr.aws/your-image
+          ports:
+            - containerPort: 3000
