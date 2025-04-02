@@ -1,6 +1,0 @@
-# Ignore Node.js and frontend files
-package-lock.json
-package.json
-node_modules/
-src/
-components.json
