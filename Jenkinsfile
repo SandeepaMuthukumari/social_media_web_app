@@ -3,8 +3,6 @@ pipeline {
 
     tools {
         nodejs 'NodeJS20'
-        // Add Terraform tool if you have it configured in Jenkins
-        terraform 'terraform' 
     }
 
     environment {
@@ -12,9 +10,8 @@ pipeline {
         RELEASE = "1.0.0"
         IMAGE_NAME = "sandeepadocker/${APP_NAME}"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
-        // Add Terraform variables
-        TF_VAR_image_name = "${IMAGE_NAME}"
-        TF_VAR_image_tag = "${IMAGE_TAG}"
+	
+
     }
 
     stages {
@@ -51,32 +48,17 @@ pipeline {
             }
         }
 
+
         stage("Trivy Scan") {
            steps {
                script {
-                    sh ('docker run -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image sandeepadocker/social-media-web-app-pipeline:latest --no-progress --scanners vuln  --exit-code 0 --severity HIGH,CRITICAL --format table')
+	            sh ('docker run -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image sandeepadocker/social-media-web-app-pipeline:latest --no-progress --scanners vuln  --exit-code 0 --severity HIGH,CRITICAL --format table')
                }
            }
        }
 
-        stage('Terraform Deploy') {
-            steps {
-                script {
-                    dir('terraform') {  // Assuming your Terraform files are in a 'terraform' directory
-                        // Initialize Terraform
-                        sh 'terraform init'
-                        
-                        // Plan the changes
-                        sh 'terraform plan -out=tfplan'
-                        
-                        // Apply the changes (auto-approve for CI/CD)
-                        sh 'terraform apply -auto-approve tfplan'
-                    }
-                }
-            }
-        }
 
-        stage ('Cleanup Artifacts') {
+         stage ('Cleanup Artifacts') {
            steps {
                script {
                     sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG}"
@@ -84,5 +66,7 @@ pipeline {
                }
           }
        }
+
+        
     }
 }
