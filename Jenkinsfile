@@ -1,11 +1,5 @@
 pipeline {
-    agent {
-        label 'docker-agent' // Use a dedicated agent with sufficient resources
-        docker {
-            image 'node:20-alpine'
-            args '-v /var/run/docker.sock:/var/run/docker.sock --memory 4g'
-        }
-    }
+    agent any
 
     tools {
         nodejs 'NodeJS20'
@@ -15,7 +9,10 @@ pipeline {
         APP_NAME = "social-media-web-app-pipeline"
         RELEASE = "1.0.0"
         IMAGE_NAME = "sandeepadocker/${APP_NAME}"
-        IMAGE_TAG = "${RELEASE}.${BUILD_NUMBER}" // Improved version format
+        IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
+	AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+
     }
 
     stages {
@@ -32,24 +29,9 @@ pipeline {
             }
         }
 
-        stage('Audit Fix') {
-            when { 
-                expression { return env.BRANCH_NAME == 'main' } 
-            }
-            steps {
-                sh 'npm audit fix'
-            }
-        }
-
         stage('Build Application') {
             steps {
                 sh 'npm run build'
-            }
-        }
-
-        stage('Setup Docker Buildx') {
-            steps {
-                sh 'docker buildx install' // Address deprecation warning
             }
         }
 
@@ -58,30 +40,34 @@ pipeline {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'dockerhub1', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                        sh "docker buildx build --push -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest ."
+                        sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                        sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest"
+                        sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
+                        sh "docker push ${IMAGE_NAME}:latest"
                     }
                 }
             }
         }
 
-        stage('Trivy Scan') {
-            steps {
-                script {
-                    sh '''docker run --rm \
-                        -v /var/run/docker.sock:/var/run/docker.sock \
-                        -v /tmp/trivy-cache:/tmp/trivy-cache \
-                        -e TRIVY_CACHE_DIR=/tmp/trivy-cache \
-                        aquasec/trivy:latest \
-                        image --security-checks vuln \
-                        --severity HIGH,CRITICAL \
-                        --no-progress \
-                        --exit-code 0 \
-                        --format table \
-                        ${IMAGE_NAME}:latest'''
-                }
-            }
-        }
-    }
 
- 
+        stage("Trivy Scan") {
+           steps {
+               script {
+	            sh ('docker run -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image sandeepadocker/social-media-web-app-pipeline:latest --no-progress --scanners vuln  --exit-code 0 --severity HIGH,CRITICAL --format table')
+               }
+           }
+       }
+
+
+         stage ('Cleanup Artifacts') {
+           steps {
+               script {
+                    sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG}"
+                    sh "docker rmi ${IMAGE_NAME}:latest"
+               }
+          }
+       }
+
+        
+    }
 }
