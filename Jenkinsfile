@@ -10,8 +10,7 @@ pipeline {
         RELEASE = "1.0.0"
         IMAGE_NAME = "sandeepadocker/${APP_NAME}"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
-	AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
-        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+	
 
     }
 
