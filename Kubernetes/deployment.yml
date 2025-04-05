@@ -2,22 +2,31 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: social-media-web-app
-  labels:
-    app: social-media-web-app
 spec:
   replicas: 2
-  selector:
-    matchLabels:
-      app: social-media-web-app
   template:
-    metadata:
-      labels:
-        app: social-media-web-app
     spec:
-      terminationGracePeriodSeconds: 30
       containers:
-      - name: social-media-web-app
+      - name: app
         image: sandeepadocker/social_media_web_app:latest
-        imagePullPolicy: "Always"
+        imagePullPolicy: Always
         ports:
         - containerPort: 5173
+        env:
+        - name: NODE_ENV
+          value: production
+        - name: VITE_MODE
+          value: production
+        command: ["npm", "run", "preview"]
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5173
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5173
+          initialDelaySeconds: 30
+          periodSeconds: 30
